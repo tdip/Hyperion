@@ -111,7 +111,7 @@ namespace Hyperion.Extensions
             return versionTolerantHeader;
         }
 
-        private static Type GetTypeFromManifestName(Stream stream, DeserializerSession session)
+        private static Type GetTypeFromManifestName(this ITypeResolver resolver, Stream stream, DeserializerSession session)
         {
             var bytes = stream.ReadLengthEncodedByteArray(session);
             var byteArr = ByteArrayKey.Create(bytes);
@@ -130,36 +130,36 @@ namespace Hyperion.Extensions
                     shortName = shortName.Replace("mscorlib,%core%", "System.Private.CoreLib,%core%");
                 }
 #endif
-                return LoadTypeByName(shortName);
+                return LoadTypeByName(resolver, shortName);
             });
         }
 
-        public static Type LoadTypeByName(string name)
+        public static Type LoadTypeByName(this ITypeResolver resolver, string name)
         {
             try
             {
                 // Try to load type name using strict version to avoid possible conflicts
                 // i.e. if there are different version available in GAC and locally
                 var typename = ToQualifiedAssemblyName(name, ignoreAssemblyVersion: false);
-                return Type.GetType(typename, true);
+                return resolver.GetType(typename, true);
             }
             catch (FileLoadException)
             {
                 var typename = ToQualifiedAssemblyName(name, ignoreAssemblyVersion: true);
-                return Type.GetType(typename, true);
+                return resolver.GetType(typename, true);
             }
         }
         
-        public static Type GetTypeFromManifestFull(Stream stream, DeserializerSession session)
+        public static Type GetTypeFromManifestFull(this ITypeResolver resolver, Stream stream, DeserializerSession session)
         {
-            var type = GetTypeFromManifestName(stream, session);
+            var type = GetTypeFromManifestName(resolver, stream, session);
             session.TrackDeserializedType(type);
             return type;
         }
 
-        public static Type GetTypeFromManifestVersion(Stream stream, DeserializerSession session)
+        public static Type GetTypeFromManifestVersion(this ITypeResolver resolver, Stream stream, DeserializerSession session)
         {
-            var type = GetTypeFromManifestName(stream, session);
+            var type = GetTypeFromManifestName(resolver, stream, session);
 
             var fieldCount = stream.ReadByte();
             for (var i = 0; i < fieldCount; i++)
