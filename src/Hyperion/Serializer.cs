@@ -43,10 +43,10 @@ namespace Hyperion
         public Serializer([NotNull] SerializerOptions options)
         {
             Options = options;
+            _typeSerializer = TypeSerializer.Instance(options.TypeResolver);
             AddSerializers();
             AddDeserializers();
             _knownValueSerializers = options.KnownTypes.Select(GetSerializerByType).ToArray();
-            _typeSerializer = TypeSerializer.Instance(options.TypeResolver);
         }
 
         private void AddDeserializers()
