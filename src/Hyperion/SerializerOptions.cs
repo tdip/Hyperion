@@ -53,11 +53,13 @@ namespace Hyperion
         internal readonly bool VersionTolerance;
         internal readonly Type[] KnownTypes;
         internal readonly Dictionary<Type, ushort> KnownTypesDict = new Dictionary<Type, ushort>();
+        internal readonly ITypeResolver TypeResolver;
 
-        public SerializerOptions(bool versionTolerance = false, bool preserveObjectReferences = false, IEnumerable<Surrogate> surrogates = null, IEnumerable<ValueSerializerFactory> serializerFactories = null, IEnumerable<Type> knownTypes = null, bool ignoreISerializable = false)
+        public SerializerOptions(bool versionTolerance = false, bool preserveObjectReferences = false, IEnumerable<Surrogate> surrogates = null, IEnumerable<ValueSerializerFactory> serializerFactories = null, IEnumerable<Type> knownTypes = null, bool ignoreISerializable = false, ITypeResolver typeResolver = null)
         {
             VersionTolerance = versionTolerance;
             Surrogates = surrogates?.ToArray() ?? EmptySurrogates;
+            TypeResolver = typeResolver ?? Internal.DefaultTypeResolver.Instance;
 
             //use the default factories + any user defined
 	        ValueSerializerFactories = serializerFactories == null

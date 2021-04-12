@@ -34,6 +34,8 @@ namespace Hyperion
         
         public readonly SerializerOptions Options;
 
+        private readonly TypeSerializer _typeSerializer;
+
         public Serializer() : this(new SerializerOptions())
         {
         }
@@ -41,6 +43,7 @@ namespace Hyperion
         public Serializer([NotNull] SerializerOptions options)
         {
             Options = options;
+            _typeSerializer = TypeSerializer.Instance(options.TypeResolver);
             AddSerializers();
             AddDeserializers();
             _knownValueSerializers = options.KnownTypes.Select(GetSerializerByType).ToArray();
@@ -64,7 +67,7 @@ namespace Hyperion
             _deserializerLookup[DoubleSerializer.Manifest] = DoubleSerializer.Instance;
             _deserializerLookup[DecimalSerializer.Manifest] = DecimalSerializer.Instance;
             _deserializerLookup[CharSerializer.Manifest] = CharSerializer.Instance;
-            _deserializerLookup[TypeSerializer.Manifest] = TypeSerializer.Instance;
+            _deserializerLookup[TypeSerializer.Manifest] = _typeSerializer;
             _deserializerLookup[UInt16Serializer.Manifest] = UInt16Serializer.Instance;
             _deserializerLookup[UInt32Serializer.Manifest] = UInt32Serializer.Instance;
             _deserializerLookup[UInt64Serializer.Manifest] = UInt64Serializer.Instance;
@@ -98,8 +101,8 @@ namespace Hyperion
             AddValueSerializer<DateTime>(DateTimeSerializer.Instance);
             AddValueSerializer<DateTimeOffset>(DateTimeOffsetSerializer.Instance);
 
-            AddValueSerializer<Type>(TypeSerializer.Instance);
-            AddValueSerializer(TypeSerializer.Instance, TypeEx.RuntimeType);
+            AddValueSerializer<Type>(_typeSerializer);
+            AddValueSerializer(_typeSerializer, TypeEx.RuntimeType);
         }
 
         private void AddValueSerializer(ValueSerializer instance, Type type)
@@ -275,12 +278,12 @@ namespace Hyperion
                     return ObjectReferenceSerializer.Instance;
                 case ObjectSerializer.ManifestFull:
                 {
-                    var type = TypeEx.GetTypeFromManifestFull(stream, session);
+                    var type = Options.TypeResolver.GetTypeFromManifestFull(stream, session);
                     return GetCustomDeserializer(type);
                 }
                 case ObjectSerializer.ManifestVersion:
                 {
-                    var type = TypeEx.GetTypeFromManifestVersion(stream, session);
+                    var type = Options.TypeResolver.GetTypeFromManifestVersion(stream, session);
                     return GetCustomDeserializer(type);
                 }
                 case ObjectSerializer.ManifestIndex:
