@@ -77,6 +77,8 @@ namespace Hyperion
         internal readonly bool VersionTolerance;
         internal readonly Type[] KnownTypes;
         internal readonly Dictionary<Type, ushort> KnownTypesDict = new Dictionary<Type, ushort>();
+        internal readonly ITypeResolver TypeResolver;
+        
         internal readonly List<Func<string, string>> CrossFrameworkPackageNameOverrides =
             DefaultPackageNameOverrides();
 
@@ -87,21 +89,24 @@ namespace Hyperion
             IEnumerable<Surrogate> surrogates = null, 
             IEnumerable<ValueSerializerFactory> serializerFactories = null, 
             IEnumerable<Type> knownTypes = null, 
-            bool ignoreISerializable = false)
-            : this(versionTolerance, preserveObjectReferences, surrogates, serializerFactories, knownTypes, ignoreISerializable, null)
-        { }
+            bool ignoreISerializable = false,
+            ITypeResolver typeResolver = null)
+            : this(versionTolerance, preserveObjectReferences, surrogates, serializerFactories, knownTypes, ignoreISerializable, null, typeResolver)
+            { }
 
         public SerializerOptions(
-            bool versionTolerance, 
-            bool preserveObjectReferences, 
+            bool versionTolerance,
+            bool preserveObjectReferences,
             IEnumerable<Surrogate> surrogates, 
             IEnumerable<ValueSerializerFactory> serializerFactories, 
-            IEnumerable<Type> knownTypes, 
-            bool ignoreISerializable, 
-            IEnumerable<Func<string, string>> packageNameOverrides)
+            IEnumerable<Type> knownTypes,
+            bool ignoreISerializable,
+            IEnumerable<Func<string, string>> packageNameOverrides,
+            ITypeResolver typeResolver = null)
         {
             VersionTolerance = versionTolerance;
             Surrogates = surrogates?.ToArray() ?? EmptySurrogates;
+            TypeResolver = typeResolver ?? Internal.DefaultTypeResolver.Instance;
 
             //use the default factories + any user defined
 	        ValueSerializerFactories = serializerFactories == null

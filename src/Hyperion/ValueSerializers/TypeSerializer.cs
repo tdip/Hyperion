@@ -16,8 +16,15 @@ namespace Hyperion.ValueSerializers
     internal sealed class TypeSerializer : ValueSerializer
     {
         public const byte Manifest = 16;
-        public static readonly TypeSerializer Instance = new TypeSerializer();
+        public static TypeSerializer Instance(ITypeResolver resolver) => new TypeSerializer(resolver);
 
+        private readonly ITypeResolver _resolver;
+        
+        public TypeSerializer(ITypeResolver resolver) {
+
+            _resolver = resolver;
+        }
+        
         public override void WriteManifest(Stream stream, SerializerSession session)
         {
             ushort typeIdentifier;
@@ -66,7 +73,7 @@ namespace Hyperion.ValueSerializers
             if (shortname == null)
                 return null;
 
-            var type = TypeEx.LoadTypeByName(shortname);
+            var type = _resolver.LoadTypeByName(shortname);
 
             //add the deserialized type to lookup
             if (session.Serializer.Options.PreserveObjectReferences)
