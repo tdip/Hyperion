@@ -78,6 +78,7 @@ namespace Hyperion
         internal readonly bool VersionTolerance;
         internal readonly Type[] KnownTypes;
         internal readonly Dictionary<Type, ushort> KnownTypesDict = new Dictionary<Type, ushort>();
+        internal readonly ITypeResolver TypeResolver;
         internal readonly List<Func<string, string>> CrossFrameworkPackageNameOverrides = DefaultPackageNameOverrides();
         internal readonly bool DisallowUnsafeTypes;
 
@@ -88,8 +89,9 @@ namespace Hyperion
             IEnumerable<Surrogate> surrogates = null, 
             IEnumerable<ValueSerializerFactory> serializerFactories = null, 
             IEnumerable<Type> knownTypes = null, 
-            bool ignoreISerializable = false)
-            : this(versionTolerance, preserveObjectReferences, surrogates, serializerFactories, knownTypes, ignoreISerializable, null)
+            bool ignoreISerializable = false,
+            ITypeResolver typeResolver = null)
+            : this(versionTolerance, preserveObjectReferences, surrogates, serializerFactories, knownTypes, ignoreISerializable, null, true, typeResolver)
         { }
 
         [Obsolete]
@@ -100,8 +102,9 @@ namespace Hyperion
             IEnumerable<ValueSerializerFactory> serializerFactories, 
             IEnumerable<Type> knownTypes, 
             bool ignoreISerializable, 
-            IEnumerable<Func<string, string>> packageNameOverrides)
-            : this(versionTolerance, preserveObjectReferences, surrogates, serializerFactories, knownTypes, ignoreISerializable, null, true)
+            IEnumerable<Func<string, string>> packageNameOverrides,
+            ITypeResolver typeResolver = null)
+            : this(versionTolerance, preserveObjectReferences, surrogates, serializerFactories, knownTypes, ignoreISerializable, null, true, typeResolver)
         { }
         
         public SerializerOptions(
@@ -112,10 +115,12 @@ namespace Hyperion
             IEnumerable<Type> knownTypes, 
             bool ignoreISerializable, 
             IEnumerable<Func<string, string>> packageNameOverrides,
-            bool disallowUnsafeTypes)
+            bool disallowUnsafeTypes,
+            ITypeResolver typeResolver = null)
         {
             VersionTolerance = versionTolerance;
             Surrogates = surrogates?.ToArray() ?? EmptySurrogates;
+            TypeResolver = typeResolver ?? Internal.DefaultTypeResolver.Instance;
 
             //use the default factories + any user defined
 	        ValueSerializerFactories = serializerFactories == null
