@@ -17,7 +17,7 @@ namespace Hyperion.Akka.Integration.Tests
         private static readonly Config Config = ConfigurationFactory.ParseString(@"
           akka {
             loglevel = WARNING
-            stdout-loglevel = WARNING
+            stdout-loglevel = OFF 
             serialize-messages = on
             actor {
                 serializers {
